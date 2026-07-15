@@ -1,333 +1,357 @@
-# Mission — Vertical slice visuel de Village IA
+# PROMPT.md — Initialisation du vertical slice Village IA
 
-Travaille directement dans le dépôt fourni.
+## Mission
 
-Lis d’abord :
+Construire une nouvelle base propre pour le vertical slice visuel de Village IA en utilisant le plugin Game Studio.
 
-1. `VISION.md` ;
-2. `README.md` ;
-3. l’image de référence jointe.
+Le prototype précédent ne constitue pas la base technique du projet. Il peut être consulté uniquement comme source éventuelle de contenu, de types ou de logique déterministe après audit explicite.
 
-L’image est la référence principale pour le niveau de détail, les proportions, la densité, les volumes, les couleurs et le traitement visuel général. `VISION.md` définit la philosophie produit et les principes à préserver.
+Le travail actuel concerne uniquement :
 
-Ne commence pas par une longue analyse. Inspecte le dépôt, implémente le prototype, ouvre-le dans le navigateur, évalue visuellement le résultat et corrige les défauts les plus importants.
+- le monde visuel ;
+- l’interface d’observation ;
+- une simulation locale simple ;
+- la préparation des frontières nécessaires à une future intégration d’agents LLM.
 
-## Objectif
+Ne pas intégrer de backend, base de données, authentification, API externe ou véritable agent LLM.
 
-Créer un vertical slice navigateur montrant un petit village autonome, vivant et agréable à observer.
+## Documents et assets à lire
 
-Le prototype doit démontrer :
+Avant de coder :
 
-* une scène 2D vue du dessus ou pseudo-isométrique ;
-* une direction artistique douce, colorée et cohérente avec l’image ;
-* environ douze habitants visibles ;
-* des déplacements et activités simples ;
-* des conversations et rassemblements lisibles ;
-* la sélection et le suivi d’un habitant ;
-* un panneau individuel discret ;
-* un premier mode POV ;
-* un journal compact ;
-* une transformation culturelle progressive du village.
+1. lire `VISION.md` ;
+2. lire `AGENTS.md` ;
+3. inspecter toutes les images de `images/references/` ;
+4. inventorier tous les assets de `images/sprites/raw/` ;
+5. identifier les éléments manquants pour la première scène.
 
-Aucun véritable LLM, backend ou système multi-agent ne doit être intégré.
+Les références visuelles constituent la source principale pour la direction artistique.
 
-## Stack
+Les fichiers présents dans `images/sprites/raw/` sont des sources immuables. Ne jamais les écraser, les recadrer ou les modifier directement.
 
-La piste recommandée est :
+## Routage Game Studio
 
-* TypeScript ;
-* Vite ;
-* React pour l’interface ;
-* Phaser pour la scène ;
-* état local léger ;
-* simulation déterministe avec une seed ;
-* assets locaux.
+Utiliser Game Studio comme point d’entrée, puis mobiliser explicitement :
 
-Phaser peut être challengé uniquement si une autre solution apporte un avantage concret et immédiat pour ce prototype. Ne consacre pas de temps à une comparaison théorique de frameworks.
+- `web-game-foundations` pour cadrer l’architecture ;
+- `phaser-2d-game` pour la scène 2D ;
+- `game-ui-frontend` pour les surfaces React ;
+- `sprite-pipeline` pour les conventions, l’échelle et l’intégration des sprites ;
+- `game-playtest` pour les captures, tests navigateur et revues visuelles.
 
-## Direction UI et artistique
+Ne pas traiter ces domaines comme des chantiers indépendants. Ils doivent former une seule architecture cohérente.
 
-Le village doit évoquer :
 
-* une miniature vivante ;
-* un petit monde autonome ;
-* un terrarium doux et légèrement mystérieux ;
-* une scène que l’on a envie d’observer ;
-* un jeu de gestion, jamais un dashboard SaaS.
+## Outils autorisés et attendus
+
+Aucun connecteur externe, MCP, service cloud ou outil de design tiers n’est nécessaire pour préparer les sprite sheets.
+
+Utiliser en priorité les capacités locales disponibles :
+
+- accès au système de fichiers du dépôt ;
+- terminal et scripts reproductibles ;
+- Python 3 ;
+- Pillow pour l’inspection, le découpage, le recadrage et l’export PNG ;
+- OpenCV uniquement si la détection de contours, de grilles ou de fonds l’exige réellement ;
+- les scripts fournis par `sprite-pipeline` lorsqu’ils correspondent au besoin ;
+- Playwright et le navigateur pour valider les assets dans la scène réelle.
+
+L’utilisation d’ImageGen est facultative et réservée à la création ou à la réparation d’assets manquants après validation explicite de la direction artistique. Ne pas utiliser la génération d’images pour découper une planche existante ou supprimer un fond simple.
+
+Éviter les outils nécessitant une API distante pour une opération réalisable localement.
+
+Toute dépendance Python ou npm ajoutée pour le pipeline doit être :
+
+- justifiée ;
+- légère ;
+- documentée ;
+- installable par une commande reproductible ;
+- absente du runtime de production lorsqu’elle ne sert qu’à la préparation des assets.
+
+## Étape 1 — audit et cadrage
+
+Produire d’abord `docs/FOUNDATIONS.md` avec :
+
+- stack retenue ;
+- structure des dossiers ;
+- séparation simulation, rendu, UI et contenu ;
+- ownership de l’état ;
+- modèle de caméra ;
+- modèle d’input ;
+- organisation du manifeste d’assets ;
+- conventions d’échelle, d’ancrage et de profondeur ;
+- stratégie de debug ;
+- stratégie de captures reproductibles ;
+- commandes du projet ;
+- principaux risques.
+
+Le document doit être court et opérationnel.
+
+Ne pas sur-concevoir les futurs systèmes LLM, backend ou sauvegarde. Préparer uniquement des frontières propres.
+
+## Étape 2 — inventaire et pipeline des assets
+
+Les assets peuvent être fournis sous forme de planches ou de sets contenant plusieurs sprites, avec ou sans arrière-plan.
+
+Commencer par inventorier les sources dans `images/sprites/raw/`.
+
+Produire `docs/ASSET_INVENTORY.md` avec un tableau indiquant pour chaque source et chaque sprite identifié :
+
+- famille ;
+- nom proposé ;
+- fichier source ;
+- position ou zone dans la planche ;
+- dimensions natives ;
+- présence et nature de l’arrière-plan ;
+- perspective ;
+- ancrage attendu ;
+- échelle logique ;
+- variations disponibles ;
+- état : utilisable, à extraire, à normaliser, ambigu, manquant ou rejeté ;
+- remarques.
+
+### Structure des assets
+
+Utiliser la structure suivante :
+
+```text
+images/sprites/
+├── raw/                    # sources originales, immuables
+├── processed/              # PNG découpés et normalisés, régénérables
+│   ├── characters/
+│   ├── buildings/
+│   ├── vegetation/
+│   ├── terrain/
+│   ├── water/
+│   ├── props/
+│   ├── ui/
+│   └── fx/
+├── previews/               # planches contact et aperçus de contrôle
+└── manifest.json           # inventaire stable utilisé par le projet
+```
+
+Le jeu ne doit jamais charger directement les fichiers de `raw/`.
+
+### Pipeline à construire
+
+Créer un pipeline local et reproductible dans `scripts/assets/` capable, selon les besoins, de :
+
+1. inspecter les dimensions et le canal alpha des sources ;
+2. détecter une grille régulière lorsqu’elle existe ;
+3. permettre une configuration manuelle des zones lorsque la détection automatique est ambiguë ;
+4. découper chaque sprite sans modifier la source ;
+5. supprimer un fond uni ou quasi uni ;
+6. préserver les contours et les pixels utiles ;
+7. recadrer les marges inutiles ;
+8. ajouter une marge transparente homogène lorsque nécessaire ;
+9. normaliser l’échelle sans agrandissement destructeur ;
+10. aligner les sprites sur un ancrage partagé, généralement `bottom-center` ;
+11. exporter en PNG transparent ;
+12. générer des noms et clés stables ;
+13. produire `images/sprites/manifest.json` ;
+14. produire des planches contact dans `images/sprites/previews/` ;
+15. produire un rapport des anomalies et décisions manuelles.
+
+Le pipeline doit être relançable sans intervention destructive.
+
+### Suppression de l’arrière-plan
+
+La suppression automatique est autorisée uniquement lorsque le fond est identifiable avec un niveau de confiance suffisant :
+
+- couleur unie ;
+- couleur quasi unie ;
+- transparence déjà présente ;
+- séparation nette avec les sprites.
+
+Ne pas supprimer automatiquement des pixels lorsque :
+
+- le fond partage des couleurs avec le sprite ;
+- les ombres sont peintes dans le fond ;
+- plusieurs sprites se chevauchent ;
+- les limites sont ambiguës ;
+- le détourage risque de dégrader le contour.
+
+Dans ces cas :
+
+- conserver la source ;
+- marquer l’asset comme `ambigu` ;
+- produire un aperçu ;
+- documenter l’intervention manuelle minimale nécessaire.
+
+Ne pas prétendre qu’un détourage est propre sans l’avoir inspecté visuellement.
+
+### Animations
+
+Lorsqu’une planche contient une animation :
+
+- identifier les lignes, colonnes, directions et états ;
+- conserver un nombre de frames explicite ;
+- normaliser toute la séquence avec une échelle commune ;
+- utiliser un ancrage commun ;
+- ne pas générer ou corriger chaque frame indépendamment si cela provoque une dérive ;
+- produire un aperçu de l’animation ou une planche de contrôle ;
+- valider le résultat dans Phaser avant de l’ajouter au manifeste final.
+
+### Manifeste
+
+Les chemins de fichiers ne doivent pas constituer l’API publique du jeu.
+
+Le manifeste doit exposer des clés lisibles, par exemple :
+
+```json
+{
+  "building.house.small.01": {
+    "path": "images/sprites/processed/buildings/house-small-01.png",
+    "anchor": [0.5, 1],
+    "nativeSize": [192, 224],
+    "worldScale": 1
+  }
+}
+```
+
+Ne pas utiliser des références opaques telles que `frame-42` ou `sprite-87` lorsqu’une identité fonctionnelle peut être donnée.
+
+### Validation du pipeline
+
+Avant d’intégrer les assets :
+
+1. générer les sprites traités ;
+2. générer les planches contact ;
+3. inspecter les transparences, contours, dimensions et ancrages ;
+4. tester un échantillon dans Phaser à l’échelle réelle ;
+5. corriger les erreurs systématiques ;
+6. relancer le pipeline ;
+7. seulement ensuite mettre à jour le manifeste utilisé par le jeu.
+
+Ne pas commencer par générer une grande quantité de nouveaux sprites.
+
+Identifier d’abord le kit minimal nécessaire à une scène statique convaincante.
+
+## Étape 3 — scaffold
+
+Créer une base Vite + TypeScript strict avec :
+
+- Phaser 3 ;
+- React ;
+- Vitest ;
+- Playwright ;
+- scripts de développement, build, test et test visuel ;
+- seed configurable par URL ;
+- API de debug `window.__village`.
+
+Architecture cible :
+
+```text
+src/
+├── app/
+├── domain/
+├── simulation/
+├── content/
+├── game/
+├── assets/
+├── ui/
+└── debug/
+```
+
+La simulation ne doit importer ni Phaser ni React.
+
+Le renderer ne doit pas être la source de vérité.
+
+L’interface React ne doit pas contenir de règles de simulation.
+
+## Étape 4 — premier milestone visuel
+
+Construire une scène statique attractive avant toute simulation complexe.
+
+La scène doit inclure au minimum :
+
+- terrain principal ;
+- eau ou limite naturelle si prévue par les références ;
+- chemins ;
+- bâtiments principaux ;
+- arbres et végétation ;
+- props ;
+- environ douze habitants immobiles ou en idle ;
+- ombres cohérentes ;
+- profondeur correcte ;
+- caméra cadrée ;
+- composition suffisamment dense pour évoquer un village vivant.
 
 Le village doit occuper la majorité de l’écran.
 
-L’interface doit rester secondaire, contextuelle et peu intrusive. Évite les grands panneaux, les tableaux de statistiques et l’affichage permanent de toutes les données.
+Ne pas utiliser des formes procédurales génériques comme remplacement final des sprites.
 
-Les fonctions des lieux et les activités des habitants doivent être compréhensibles principalement par le rendu et les comportements.
+Ne pas construire l’interface principale définitive tant que sa direction détaillée n’a pas été ajoutée à `VISION.md`.
 
-Utilise des volumes simples, des ombres légères, des superpositions maîtrisées et des personnages suffisamment distincts malgré leur petite taille.
+Une interface temporaire minimale est autorisée uniquement pour :
 
-Ne cherche pas à reproduire littéralement l’image de référence. Produis une scène originale qui reprend sa logique visuelle.
+- debug ;
+- pause ;
+- affichage de la seed ;
+- déclenchement des états de capture.
 
-## Scène
+## Validation visuelle obligatoire
 
-Construis une seule carte compacte.
+Pour le premier milestone :
 
-Elle doit contenir :
+1. lancer le projet ;
+2. ouvrir la scène dans un navigateur réel ;
+3. produire des captures en 1280 × 720, 1440 × 900 et 1920 × 1080 ;
+4. comparer explicitement les captures aux références ;
+5. écrire une courte revue dans `docs/VISUAL_REVIEW.md` ;
+6. corriger les principaux écarts ;
+7. produire une seconde série de captures ;
+8. lancer le build et les tests.
 
-* des habitations ;
-* un lieu de travail ou de production ;
-* un lieu collectif ;
-* un lieu favorisant les échanges sociaux ;
-* suffisamment de décor pour éviter une impression de prototype vide.
+Ne pas considérer le milestone terminé après une seule passe.
 
-Ne cherche pas à produire une carte complète, procédurale ou éditable.
+## Critères de réussite du premier milestone
 
-La composition exacte doit être guidée par l’image de référence plutôt que par une liste trop rigide d’éléments environnementaux.
+- la capture ressemble à un jeu, pas à une démo technique ;
+- la scène donne envie d’observer le village ;
+- les sprites partagent une perspective cohérente ;
+- les habitants sont visibles et identifiables ;
+- la composition n’est ni vide ni surchargée ;
+- les bâtiments structurent naturellement la scène ;
+- le village occupe l’espace principal ;
+- aucune interface de type dashboard ne domine l’image ;
+- les captures sont reproductibles avec une seed fixe ;
+- le build et les tests passent.
 
-## Habitants
+## Suite prévue
 
-Ajoute environ douze habitants.
+Après validation de la scène statique seulement :
 
-Chaque habitant possède au minimum :
+1. ajouter idle, marche et activités simples ;
+2. ajouter sélection, suivi et panneau contextuel ;
+3. ajouter journal et premier POV ;
+4. ajouter la propagation scriptée de la Doctrine de la Mie ;
+5. vérifier que les transformations visuelles passent par des directives génériques.
 
-* un nom ;
-* un métier ;
-* deux traits ;
-* une humeur ;
-* une activité ;
-* une pensée actuelle ;
-* quelques relations ;
-* une affinité culturelle ;
-* un niveau d’influence.
+## Limite actuelle sur l’interface
 
-Ils doivent pouvoir :
+La description détaillée de l’écran principal n’est pas encore finalisée.
 
-* marcher ;
-* attendre ;
-* travailler ;
-* discuter ;
-* rejoindre un petit groupe ;
-* dormir ou se retirer ;
-* réagir à un événement scripté.
+Ne pas inventer une architecture UI définitive sur la seule base des fonctionnalités attendues.
 
-Ils doivent rester identifiables grâce à quelques variations simples : silhouette, couleur, vêtement, coiffure, accessoire ou animation.
+Préparer des composants découplés et une surface DOM légère, mais attendre le cadrage dédié pour figer :
 
-Tous les habitants ne doivent pas être constamment actifs.
+- placement du HUD ;
+- panneau habitant ;
+- journal ;
+- navigation ;
+- contrôles permanents ;
+- transitions entre vue globale, suivi et POV.
 
-## Interactions
+## Compte rendu attendu
 
-Implémente :
+À la fin de chaque milestone, fournir :
 
-* déplacement et zoom de caméra ;
-* pause ;
-* vitesse normale et accélérée ;
-* sélection directe d’un habitant ;
-* suivi de l’habitant sélectionné ;
-* panneau individuel ;
-* retour à la vue globale ;
-* bulles courtes pour les conversations importantes ;
-* réactions visuelles légères ;
-* journal chronologique compact.
-
-Le panneau individuel doit privilégier la situation présente :
-
-* nom ;
-* métier ;
-* activité ;
-* humeur ;
-* pensée ;
-* traits ;
-* relations importantes ;
-* affinités culturelles pertinentes ;
-* commandes de suivi et de POV.
-
-Ne crée pas une fiche RPG exhaustive.
-
-## Mode POV
-
-Le mode POV doit modifier principalement les informations accessibles :
-
-* caméra centrée sur l’habitant ;
-* pensées de cet agent prioritaires ;
-* conversations visibles seulement à proximité ;
-* informations globales réduites ou masquées ;
-* perception légèrement subjective ;
-* retour simple à la vue globale.
-
-Il n’est pas nécessaire de créer un nouveau moteur graphique ou un filtre visuel complexe.
-
-## Scénario de démonstration
-
-Utilise un scénario déterministe appelé « Doctrine de la Mie ».
-
-Il sert uniquement à démontrer une propagation culturelle générique.
-
-Déroulement attendu :
-
-1. le village fonctionne normalement ;
-2. un habitant lié à la boulangerie attribue une valeur symbolique au pain ;
-3. quelques habitants proches entendent cette idée ;
-4. certains reprennent progressivement son vocabulaire ou son symbole ;
-5. l’influence du groupe augmente ;
-6. un signe apparaît sur un lieu ou un personnage ;
-7. un rassemblement se forme ;
-8. le journal annonce la montée de la Doctrine de la Mie ;
-9. certains habitants adhèrent ;
-10. d’autres restent sceptiques.
-
-Exemples de textes courts :
-
-* « La mie nous rassemble. »
-* « Ils parlent encore de pain. »
-* « Ce symbole apparaît un peu partout. »
-* « Je ne suis pas convaincu, mais tout le monde en parle. »
-* « La Doctrine de la Mie gagne en influence. »
-
-La transformation doit être progressive et facile à comprendre.
-
-Aucune logique du moteur ne doit être spécifiquement codée pour le pain. Le scénario doit être défini comme du contenu remplaçable.
-
-## Transformations visuelles génériques
-
-Prépare un système permettant à une future simulation de produire des directives visuelles structurées.
-
-Les primitives peuvent permettre :
-
-* d’afficher un symbole ;
-* d’afficher un emoji ;
-* d’appliquer une couleur ou une palette ;
-* d’ajouter un panneau, une bannière ou une décoration ;
-* d’ajouter un accessoire à un personnage ;
-* d’afficher un slogan court ;
-* d’afficher une réaction temporaire ;
-* de modifier légèrement une ambiance ;
-* de retirer ou remplacer un élément.
-
-Le moteur contrôle :
-
-* la taille ;
-* la position autorisée ;
-* la densité ;
-* les superpositions ;
-* la durée ;
-* le contraste ;
-* les performances.
-
-Il ne définit pas la signification culturelle des symboles, couleurs ou emojis.
-
-Les futurs agents produiront le sens. Le moteur graphique contrôlera uniquement la forme.
-
-Les emojis peuvent être natifs, issus d’une banque cohérente ou intégrés à un support visuel commun. Choisis la solution la plus pertinente pour ce prototype sans construire un système exhaustif.
-
-## Architecture
-
-Maintiens une séparation claire entre :
-
-* domaine et types ;
-* simulation ;
-* contenu narratif ;
-* adaptateur de rendu ;
-* scène Phaser ;
-* interface React ;
-* assets.
-
-Principes impératifs :
-
-* la simulation n’importe pas Phaser ;
-* React ne contient pas les règles de simulation ;
-* Phaser ne décide pas du sens narratif ;
-* les transformations visuelles sont sérialisables ;
-* le scénario de la Mie reste dans le contenu ;
-* une seed identique reproduit la démonstration ;
-* un futur orchestrateur LLM pourra remplacer ou compléter la simulation sans réécrire l’interface.
-
-Ne surarchitecture pas le prototype. Mets en place uniquement les abstractions nécessaires à une reprise propre.
-
-## Hors périmètre
-
-Ne construis pas :
-
-* de véritable LLM ;
-* de backend ;
-* de base de données ;
-* d’authentification ;
-* de sauvegarde cloud ;
-* de multijoueur ;
-* de monde persistant ;
-* de connexion aux actualités ;
-* d’économie complète ;
-* de politique complète ;
-* de révolution ;
-* de combat ;
-* de génération procédurale complexe ;
-* d’éditeur de carte ;
-* de version mobile dédiée.
-
-## Priorités
-
-En cas de temps ou de crédits limités :
-
-### Priorité 1
-
-* qualité de la scène ;
-* direction artistique ;
-* composition ;
-* caméra ;
-* habitants ;
-* déplacements.
-
-### Priorité 2
-
-* conversations ;
-* sélection ;
-* suivi ;
-* journal ;
-* propagation de la Doctrine de la Mie.
-
-### Priorité 3
-
-* transformations visuelles génériques ;
-* réactions et symboles ;
-* POV.
-
-### Priorité 4
-
-* cycle jour/nuit ;
-* animations secondaires ;
-* tests supplémentaires ;
-* documentation détaillée.
-
-Une scène cohérente et mémorable vaut mieux qu’une liste complète de fonctionnalités moyennes.
-
-## Processus attendu
-
-1. Inspecte le dépôt et les documents.
-2. Analyse l’image de référence.
-3. Construis une première version fonctionnelle.
-4. Lance-la dans le navigateur.
-5. Vérifie la composition, l’échelle et la densité.
-6. Vérifie la lisibilité avec douze habitants.
-7. Corrige les cinq défauts visuels ou ergonomiques les plus importants.
-8. Vérifie la fluidité.
-9. Exécute le build.
-10. Laisse le dépôt dans un état stable.
-
-Ne demande pas de validation pour les choix esthétiques mineurs.
-
-## Livrables
-
-Mets à jour `README.md` pour refléter les vraies commandes.
-
-Crée un `HANDOFF.md` concis contenant :
-
-* architecture réelle ;
-* contrats importants ;
-* fonctionnement de la simulation ;
-* fonctionnement des directives visuelles ;
-* traitement retenu pour les symboles et emojis ;
-* éléments scriptés ;
-* compromis ;
-* limites ;
-* point d’intégration du futur orchestrateur LLM ;
-* prochaines étapes pour Codex.
-
-Conserve quelques captures représentatives si l’environnement le permet.
-
-La priorité absolue reste le prototype interactif et visuel.
+- résumé des modifications ;
+- fichiers créés ou modifiés ;
+- commandes exécutées ;
+- liens ou chemins des captures ;
+- résultats des tests ;
+- analyse visuelle concise ;
+- limites restantes ;
+- prochaine étape logique.
