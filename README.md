@@ -65,31 +65,18 @@ Le projet ne doit nécessiter aucune API externe pour fonctionner.
 
 ---
 
-## Préparation du dépôt
-
-Avant de confier le projet à Fable, vérifier la présence des fichiers suivants :
+## Structure du dépôt
 
 ```text
-village-ai/
-├── prompt.md
-├── VISION.md
-├── README.md
+villageIA/
+├── prompt.md          # mission du vertical slice
+├── VISION.md          # vision produit
+├── HANDOFF.md         # documentation de transmission (architecture réelle)
+├── images/reference.png
 ├── package.json
-├── src/
-└── public/
+├── index.html
+└── src/
 ```
-
-L’image de référence doit être ajoutée au dépôt ou jointe explicitement à la mission.
-
-Le dépôt doit idéalement être initialisé avec Git avant l’intervention de Fable :
-
-```bash
-git init
-git add .
-git commit -m "Initial project context"
-```
-
-Cela permet d’isoler clairement les modifications produites pendant la passe de génération.
 
 ---
 
@@ -159,38 +146,31 @@ Fable doit adapter cette section si les scripts réellement configurés diffère
 
 ---
 
-## Architecture attendue
+## Architecture réelle
 
 ```text
 src/
-├── domain/
-│   ├── villagers/
-│   ├── village/
-│   ├── events/
-│   └── visual-directives/
+├── domain/types.ts        # contrats partagés, sérialisables (directives visuelles incluses)
 ├── simulation/
-│   ├── engine/
-│   ├── systems/
-│   ├── scenarios/
-│   └── seed/
+│   ├── rng.ts             # RNG seedé (mulberry32)
+│   ├── engine.ts          # VillageSim — tick fixe, déterministe
+│   └── systems/           # movement, behavior, conversation, culture, scenario
+├── content/               # data pure : carte, habitants, culture et scénario de la Mie
+│   ├── map.ts
+│   ├── villagers.ts
+│   ├── cultures/mie.ts
+│   └── scenarios/mie.ts
 ├── rendering/
-│   ├── phaser/
-│   ├── adapters/
-│   ├── sprites/
-│   └── visual-directives/
-├── ui/
-│   ├── components/
-│   ├── panels/
-│   └── hooks/
-├── content/
-│   ├── villagers/
-│   ├── dialogues/
-│   ├── scenarios/
-│   └── cultures/
-└── assets/
+│   ├── palette.ts         # direction artistique
+│   ├── directives.ts      # garde-fous des directives visuelles
+│   └── phaser/            # scène, carte procédurale, vues des habitants
+├── app/runtime.ts         # instance sim + store UI (ni React ni Phaser)
+└── ui/                    # React : barre du temps, journal, panneau habitant, POV
 ```
 
-Cette organisation peut être adaptée à condition de préserver la séparation des responsabilités.
+Détails complets (contrats, compromis, intégration LLM) dans [`HANDOFF.md`](./HANDOFF.md).
+
+La seed de démonstration peut être changée via l'URL : `http://localhost:5173/?seed=1234`.
 
 ---
 

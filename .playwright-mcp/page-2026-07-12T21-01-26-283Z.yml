@@ -1,0 +1,9 @@
+- generic [ref=e3]:
+  - generic [ref=e6]:
+    - generic [ref=e7]: Le Petit Havre
+    - generic [ref=e9]: Jour 1 · 06h00
+    - button "⏸" [ref=e11] [cursor=pointer]
+    - button "×1" [ref=e12] [cursor=pointer]
+    - button "×3" [ref=e13] [cursor=pointer]
+  - button "📜 Journal" [ref=e14] [cursor=pointer]
+  - generic [ref=e15]: Cliquez sur un habitant · glissez pour déplacer · molette pour zoomer
